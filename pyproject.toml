@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "randomizer"
+version = "0.1.0"
+description = ""
+authors = ["wilku <29576048+wilku103@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+kivy = "^2.1.0"
+kivy4 = "^5.2.3"
+kivymd = "^1.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
