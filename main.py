@@ -7,6 +7,7 @@ from kivy.storage.jsonstore import JsonStore
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.textinput import TextInput
 
 kivy.require("2.1.0")
@@ -21,7 +22,7 @@ class Position(BoxLayout):
 	text = StringProperty("")
 
 
-class Randomizer(GridLayout):
+class Randomizer(Screen):
 	labels_list: GridLayout = ObjectProperty(None)
 	list_name: TextInput = ObjectProperty(None)
 	list_path: TextInput = ObjectProperty(None)
@@ -75,12 +76,14 @@ class Randomizer(GridLayout):
 			return
 		can_be_picked = [child for child in self.labels_list.children if not child.picked]
 
+		# if no positions left, show a popup
 		if len(can_be_picked) == 0:
 			popup = PickedPopup(title="No positions left", text="All positions have been picked",
 								size_hint=(None, None),
 								size=(400, 400))
 			popup.open()
 			return
+
 		picked_child = choice(can_be_picked)
 		picked_child.picked = True
 
@@ -95,12 +98,18 @@ class Randomizer(GridLayout):
 				self.add_position(line)
 
 
+class MainScreen(Screen):
+	pass
+
+
 class RandomizerApp(App):
 	def build(self):
-		return Randomizer()
+		manager = ScreenManager()
+		manager.add_widget(MainScreen(name="main"))
+		manager.add_widget(Randomizer(name="randomizer"))
+		# manager.switch_to(MainScreen(name="main"))
 
-	def on_stop(self):
-		pass
+		return manager
 
 
 if __name__ == '__main__':

@@ -19,59 +19,69 @@
 			text: "Close"
 			on_press: root.dismiss()
 
-<Randomizer>
-	rows: 2
+<MainScreen>
+	name: "main"
 
+	StackLayout:
+		orientation: "tb-lr"
+		Button:
+			text: "Randomize"
+			on_press: root.manager.current = "randomizer"
+
+<Randomizer>
 	labels_list: labels_list
 	input: input
 	list_name: list_name
 	list_path: list_path
 
-	BoxLayout:
-		height: 500
-		orientation: "vertical"
+	GridLayout:
+		rows: 2
+
 		BoxLayout:
-			orientation: "horizontal"
+			height: 500
+			orientation: "vertical"
 			BoxLayout:
-				orientation: "vertical"
+				orientation: "horizontal"
+				BoxLayout:
+					orientation: "vertical"
+					TextInput:
+						id: list_name
+						hint_text: "list name"
+					TextInput:
+						id: list_path
+						hint_text: "list path"
 				TextInput:
-					id: list_name
-					hint_text: "list name"
-				TextInput:
-					id: list_path
-					hint_text: "list path"
-			TextInput:
-				id: input
-				multiline: False
-				hint_text: "position to add"
-				on_text_validate: root.add_position(input.text)
-				text_validate_unfocus: False
+					id: input
+					multiline: False
+					hint_text: "position to add"
+					on_text_validate: root.add_position(input.text)
+					text_validate_unfocus: False
 
-		BoxLayout:
-			Button:
-				text: "add to list"
-				on_press: root.add_position(input.text)
-			Button:
-				text: "load list"
-				on_press: root.load_list(list_name.text)
-			Button:
-				text: "save list"
-				on_press: root.save_list(list_name.text)
-			Button:
-				text: "debug"
-				on_press: root.print_random_child()
-			Button:
-				text: "clear"
-				on_press: root.clear_list()
-	ScrollView:
-		do_scroll_x: False
-		do_scroll_y: True
-		size_hint: (1, 1)
+			BoxLayout:
+				Button:
+					text: "add to list"
+					on_press: root.add_position(input.text)
+				Button:
+					text: "load list"
+					on_press: root.load_list(list_name.text)
+				Button:
+					text: "save list"
+					on_press: root.save_list(list_name.text)
+				Button:
+					text: "debug"
+					on_press: root.print_random_child()
+				Button:
+					text: "clear"
+					on_press: root.clear_list()
+		ScrollView:
+			do_scroll_x: False
+			do_scroll_y: True
+			size_hint: (1, 1)
 
 
-		GridLayout:
-			id: labels_list
-			cols: 1
-			size_hint_y: None
-			height: 100
-			padding: 5, 5
+			GridLayout:
+				id: labels_list
+				cols: 1
+				size_hint_y: None
+				height: 100
+				padding: 5, 5
