@@ -1,86 +1,77 @@
-<Position@BoxLayout>
+<Position>
 	orientation: "horizontal"
 	size_hint_y: None
 	height: 50
-	Label:
+	MDLabel:
 		text: root.text
-	Button:
+	MDFlatButton:
 		size_hint: (0.2, 1)
 		text: "x"
 		on_press: root.parent.remove_widget(root)
 
-<PickedPopup@Popup>
-	BoxLayout:
-		orientation: "vertical"
-		Label:
-			text: root.text
-		Button:
-			size_hint: (1, 0.2)
-			text: "Close"
-			on_press: root.dismiss()
-
 <MainScreen>
 	name: "main"
 
-	StackLayout:
+	MDStackLayout:
 		orientation: "tb-lr"
-		Button:
+		MDFlatButton:
 			text: "Randomize"
 			on_press: root.manager.current = "randomizer"
 
 <Randomizer>
-	labels_list: labels_list
+	positions_list: positions_list
 	input: input
 	list_name: list_name
 	list_path: list_path
 
-	GridLayout:
+	MDGridLayout:
 		rows: 2
 
-		BoxLayout:
+		MDBoxLayout:
 			height: 500
 			orientation: "vertical"
-			BoxLayout:
+			MDBoxLayout:
 				orientation: "horizontal"
-				BoxLayout:
+				MDBoxLayout:
 					orientation: "vertical"
-					TextInput:
+					MDTextField:
 						id: list_name
 						hint_text: "list name"
-					TextInput:
+					MDTextField
 						id: list_path
 						hint_text: "list path"
-				TextInput:
+				MDTextField:
 					id: input
 					multiline: False
 					hint_text: "position to add"
 					on_text_validate: root.add_position(input.text)
 					text_validate_unfocus: False
 
-			BoxLayout:
-				Button:
+			MDBoxLayout:
+				MDFlatButton:
 					text: "add to list"
 					on_press: root.add_position(input.text)
-				Button:
+				MDFlatButton:
 					text: "load list"
 					on_press: root.load_list(list_name.text)
-				Button:
+				MDFlatButton:
 					text: "save list"
 					on_press: root.save_list(list_name.text)
-				Button:
+				MDFlatButton:
 					text: "debug"
 					on_press: root.print_random_child()
-				Button:
+				MDFlatButton:
 					text: "clear"
 					on_press: root.clear_list()
-		ScrollView:
+		MDScrollView:
 			do_scroll_x: False
 			do_scroll_y: True
 			size_hint: (1, 1)
 
 
-			GridLayout:
-				id: labels_list
+			MDGridLayout:
+				id: positions_list
+				adaptive_height: True
 				cols: 1
 				size_hint_y: None
 				height: 100
