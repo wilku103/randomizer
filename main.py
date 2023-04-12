@@ -1,4 +1,5 @@
 from os.path import exists
+from random import choice
 
 import kivy
 from kivy.properties import ObjectProperty, BooleanProperty, ListProperty
@@ -44,6 +45,7 @@ class Position(MDLabel):
 		if focus is False:
 			if instance.text == "":
 				self.parent.parent.parent.parent.get_list().remove_position(self)
+				self.parent.parent.parent.parent.update()
 				return
 
 			self.text = instance.text
@@ -60,6 +62,7 @@ class NewPosition(Position):
 	def on_text_focus(self, instance, focus):
 		if focus is False and instance.text != "":
 			self.parent.parent.parent.parent.get_list().add_position(Position(text=instance.text))
+			self.parent.parent.parent.parent.update()
 			self.text = ""
 			self.edit = False
 
@@ -75,13 +78,21 @@ class SavedList:
 
 	def remove_position(self, position: Position):
 		self.positions.remove(position)
-		position.parent.remove_widget(position)
 
 	def clear_positions(self):
 		self.positions.clear()
 
 	def get_positions(self):
 		return self.positions
+
+	def get_random_position(self):
+		# choose a random position that has not been picked yet
+		positions = [position for position in self.positions if not position.picked]
+		if len(positions) == 0:
+			return None
+		position = choice(positions)
+		position.picked = True
+		return position
 
 	def get_name(self):
 		return self.name
@@ -114,7 +125,6 @@ class ListScreen(MDScreen):
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self.bind(_list=self.update)
 
 	def set_list(self, _list: SavedList):
 		self._list = _list
@@ -122,15 +132,14 @@ class ListScreen(MDScreen):
 	def get_list(self):
 		return self._list
 
-	def update(self, instance, value):
-		print("updating")
+	def update(self):
 		self.positions.clear_widgets()
 		for position in self._list.get_positions():
 			self.positions.add_widget(position)
+		self.positions.add_widget(NewPosition())
 
 	def on_enter(self, *args):
-		self._list.add_position(NewPosition())
-		self.update(None, None)
+		self.update()
 
 	def on_leave(self, *args):
 		self._list.save()
