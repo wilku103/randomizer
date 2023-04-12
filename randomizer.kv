@@ -1,13 +1,15 @@
+<Toolbar>
+	left_action_items: [["arrow-left", lambda x: app.go_back()]]
+
 <Position>
-	orientation: "horizontal"
+	canvas.before:
+		Color:
+			rgba: 1, 0, 0, 0.1
+		Rectangle:
+			size: self.size
+			pos: self.pos
 	size_hint_y: None
 	height: 50
-	MDLabel:
-		text: root.text
-	MDFlatButton:
-		size_hint: (0.2, 1)
-		text: "x"
-		on_press: root.parent.remove_widget(root)
 
 <MainScreen>
 	name: "main"
@@ -19,50 +21,16 @@
 			on_press: root.manager.current = "randomizer"
 
 <Randomizer>
-	positions_list: positions_list
-	input: input
-	list_name: list_name
-	list_path: list_path
+	lists_grid: lists_grid
 
-	MDGridLayout:
-		rows: 2
+	name: "randomizer"
 
-		MDBoxLayout:
-			height: 500
-			orientation: "vertical"
-			MDBoxLayout:
-				orientation: "horizontal"
-				MDBoxLayout:
-					orientation: "vertical"
-					MDTextField:
-						id: list_name
-						hint_text: "list name"
-					MDTextField
-						id: list_path
-						hint_text: "list path"
-				MDTextField:
-					id: input
-					multiline: False
-					hint_text: "position to add"
-					on_text_validate: root.add_position(input.text)
-					text_validate_unfocus: False
+	MDBoxLayout:
+		orientation: "vertical"
 
-			MDBoxLayout:
-				MDFlatButton:
-					text: "add to list"
-					on_press: root.add_position(input.text)
-				MDFlatButton:
-					text: "load list"
-					on_press: root.load_list(list_name.text)
-				MDFlatButton:
-					text: "save list"
-					on_press: root.save_list(list_name.text)
-				MDFlatButton:
-					text: "debug"
-					on_press: root.print_random_child()
-				MDFlatButton:
-					text: "clear"
-					on_press: root.clear_list()
+		Toolbar:
+			title: "Randomizer"
+
 		MDScrollView:
 			do_scroll_x: False
 			do_scroll_y: True
@@ -70,7 +38,34 @@
 
 
 			MDGridLayout:
-				id: positions_list
+				id: lists_grid
+				adaptive_height: True
+				cols: 1
+				size_hint_y: None
+				height: 100
+				padding: 5, 5
+
+<ListScreen>
+	positions: positions
+	toolbar: toolbar
+
+	name: "list"
+
+	MDBoxLayout:
+		orientation: "vertical"
+
+		Toolbar:
+			id: toolbar
+			title: "List"
+
+		MDScrollView:
+			do_scroll_x: False
+			do_scroll_y: True
+			size_hint: (1, 1)
+			pos_hint: {"top": 1}
+
+			MDGridLayout:
+				id: positions
 				adaptive_height: True
 				cols: 1
 				size_hint_y: None
