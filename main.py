@@ -128,6 +128,7 @@ class ListScreen(MDScreen):
 
 	def set_list(self, _list: SavedList):
 		self._list = _list
+		self.toolbar.title = _list.get_name()
 
 	def get_list(self):
 		return self._list
@@ -181,9 +182,7 @@ class Randomizer(MDScreen):
 		_list = SavedList(name=instance.text, path=self.saved_lists.get(instance.text)["path"])
 		_list.load()
 		self.manager.get_screen("list").set_list(_list)
-		self.manager.get_screen("list").toolbar.title = instance.text
-		self.manager.transition.direction = "left"
-		self.manager.current = "list"
+		MDApp.get_running_app().go_forward_to("list")
 
 	def load_saved_lists(self):
 		for name in self.lists:
@@ -216,7 +215,10 @@ class RandomizerApp(MDApp):
 	def go_back(self):
 		self.manager.transition.direction = "right"
 		self.manager.current = self.manager.previous()
+
+	def go_forward_to(self, screen):
 		self.manager.transition.direction = "left"
+		self.manager.current = screen
 
 
 if __name__ == '__main__':
