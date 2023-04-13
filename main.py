@@ -1,3 +1,4 @@
+from os import remove
 from os.path import exists
 from random import choice
 
@@ -9,6 +10,7 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.textfield import MDTextField
@@ -55,7 +57,6 @@ class Position(MDLabel):
 class NewPosition(Position):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		# self.text = "new position"
 		self.edit = True
 		self.textinput.hint_text = "new position"
 
@@ -86,7 +87,6 @@ class SavedList:
 		return self.positions
 
 	def get_random_position(self):
-		# choose a random position that has not been picked yet
 		positions = [position for position in self.positions if not position.picked]
 		if len(positions) == 0:
 			return None
@@ -190,6 +190,17 @@ class Randomizer(MDScreen):
 			# _list.load()
 			list_button = MDFlatButton(text=name, on_press=self.open_list_screen)
 			self.lists_grid.add_widget(list_button)
+
+	def delete_list(self, _list: SavedList):
+		# confirm deletion
+		popup = MDDialog(title="Are you sure?", text=f"Are you sure that you want to delete list {_list.get_name()}?")
+
+		MDApp.get_running_app().go_back()
+		remove(_list.get_path())
+		self.saved_lists.delete(_list.get_name())
+		self.lists.remove(_list.get_name())
+		self.lists_grid.clear_widgets()
+		self.load_saved_lists()
 
 
 class MainScreen(MDScreen):
