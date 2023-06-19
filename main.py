@@ -1,11 +1,12 @@
 from os import remove
 from os.path import exists
-from random import choice
+from random import choice, randint, sample
 
 import kivy
 from kivy.properties import ObjectProperty, BooleanProperty, ListProperty
 from kivy.storage.jsonstore import JsonStore
 from kivymd.app import MDApp
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
@@ -19,6 +20,18 @@ from kivymd.uix.toolbar import MDTopAppBar
 kivy.require("2.1.0")
 
 
+# class Toolbared(MDWidget):
+# 	def __init__(self, **kwargs):
+# 		super().__init__(**kwargs)
+# 		self.toolbar = MDTopAppBar(left_action_items=[["arrow-left", lambda x: MDApp.get_running_app().go_back()]],
+# 		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
+# 		self.toolbar_menu = None
+# 		self.add_widget(self.toolbar)
+#
+# 	def open_menu(self):
+# 		self.toolbar_menu.open()
+
+
 class Position(MDLabel):
 	edit = BooleanProperty(False)
 	picked = BooleanProperty(False)
@@ -30,7 +43,7 @@ class Position(MDLabel):
 			self.edit = True
 		return super(Position, self).on_touch_down(touch)
 
-	def on_edit(self, instance, value):
+	def on_edit(self, _, value):
 		if not value:
 			if self.textinput:
 				self.remove_widget(self.textinput)
@@ -62,17 +75,21 @@ class NewPosition(Position):
 
 	def on_text_focus(self, instance, focus):
 		if focus is False and instance.text != "":
-			self.parent.parent.parent.parent.get_list().add_position(Position(text=instance.text))
+			self.parent.parent.parent.parent.get_list(
+					).add_position(Position(text=instance.text))
 			self.parent.parent.parent.parent.update()
 			self.text = ""
 			self.edit = False
 
 
 class SavedList:
-	def __init__(self, name: str, path: str):
+	def __init__(self, name: str):
 		self.name = name
-		self.path = path
+		self.path = f"lists/{name}.json"
 		self.positions = []
+
+		if exists(self.path):
+			self.load()
 
 	def add_position(self, position: Position):
 		self.positions.append(position)
@@ -117,18 +134,22 @@ class SavedList:
 		_list.put("list", positions=positions_to_save)
 		_list.store_sync()
 
+		saved_lists = JsonStore("saved_lists.json")
+		if not saved_lists.exists(self.name):
+			saved_lists.put(self.name, name=self.name, path=self.path)
+			saved_lists.store_sync()
+
 
 class ListScreen(MDScreen):
 	positions: MDGridLayout = ObjectProperty(None)
-	toolbar: MDTopAppBar = ObjectProperty(None)
-	_list: SavedList = ObjectProperty(None, rebind=True)
+	_list: SavedList = ObjectProperty(SavedList("default"))
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 
 	def set_list(self, _list: SavedList):
 		self._list = _list
-		self.toolbar.title = _list.get_name()
+		MDApp.get_running_app().toolbar.title = _list.get_name()
 
 	def get_list(self):
 		return self._list
@@ -141,14 +162,20 @@ class ListScreen(MDScreen):
 
 	def on_enter(self, *args):
 		self.update()
+		MDApp.get_running_app().menu = MDDropdownMenu(items=[
+			{
+				"text":       "Clear",
+				"on_release": self._list.clear_positions
+				},
+			{
+				"text":       "Delete",
+				"on_release": lambda _: MDApp.get_running_app().manager.get_screen("randomizer").delete_list(self._list)
+				}
+			], width_mult=4, caller=MDApp.get_running_app().toolbar)
 
 	def on_leave(self, *args):
 		self._list.save()
 		self.positions.clear_widgets()
-
-
-class Toolbar(MDTopAppBar):
-	left_action_items = ListProperty([["arrow-left", lambda x: MDApp.get_running_app().go_back()]])
 
 
 class Randomizer(MDScreen):
@@ -159,19 +186,30 @@ class Randomizer(MDScreen):
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
+
+	def update(self):
 		self.identify_lists()
-		self.load_saved_lists()
+		self.lists_grid.clear_widgets()
+		for name in self.lists:
+			list_button = MDFlatButton(text=name, on_press=self.open_list_screen)
+			self.lists_grid.add_widget(list_button)
 
 	def on_enter(self, *args):
+		MDApp.get_running_app().toolbar.title = "lists"
+
+		self.update()
+
 		if len(self.corrupted_lists) > 0:
 			text = ""
 			for name in self.corrupted_lists:
 				text += f"{name}\n"
 			popup = MDDialog(title="the following lists are corrupted:", text=text)
-
-	# popup.open()
+			popup.open()
+		self.add_widget(MDFlatButton(text="new list", on_press=self.open_list_screen))
 
 	def identify_lists(self):
+		self.lists.clear()
+
 		for name in self.saved_lists:
 			if not exists(self.saved_lists.get(name)["path"]):
 				self.corrupted_lists.append(name)
@@ -179,28 +217,44 @@ class Randomizer(MDScreen):
 				self.lists.append(name)
 
 	def open_list_screen(self, instance):
-		_list = SavedList(name=instance.text, path=self.saved_lists.get(instance.text)["path"])
-		_list.load()
+		_list = SavedList(name=instance.text)
 		self.manager.get_screen("list").set_list(_list)
 		MDApp.get_running_app().go_forward_to("list")
 
-	def load_saved_lists(self):
-		for name in self.lists:
-			# _list = SavedList(name=name, path=self.saved_lists.get(name)["path"])
-			# _list.load()
-			list_button = MDFlatButton(text=name, on_press=self.open_list_screen)
-			self.lists_grid.add_widget(list_button)
-
 	def delete_list(self, _list: SavedList):
-		# confirm deletion
-		popup = MDDialog(title="Are you sure?", text=f"Are you sure that you want to delete list {_list.get_name()}?")
-
 		MDApp.get_running_app().go_back()
-		remove(_list.get_path())
-		self.saved_lists.delete(_list.get_name())
-		self.lists.remove(_list.get_name())
+		if exists(_list.get_path()):
+			remove(_list.get_path())
+		if self.saved_lists.exists(_list.get_name()):
+			self.saved_lists.delete(_list.get_name())
+		if _list.get_name() in self.lists:
+			self.lists.remove(_list.get_name())
 		self.lists_grid.clear_widgets()
-		self.load_saved_lists()
+		self.update()
+
+
+class RandomNumber(MDScreen):
+	numbers = ObjectProperty(None)
+
+	def on_enter(self, *args):
+		MDApp.get_running_app().toolbar.title = "random number"
+
+	def get_numbers(self, min_val: int, max_val: int, amount: int, unique: bool):
+
+		if min_val > max_val:
+			self.numbers.text = "min value must be smaller than max value"
+			return
+		if unique and amount > max_val - min_val + 1:
+			self.numbers.text = "amount must be smaller than range"
+			return
+
+		if unique:
+			num_list = sample(range(min_val, max_val + 1), amount)
+		else:
+			num_list = [randint(min_val, max_val) for _ in range(amount)]
+
+		num_list.sort()
+		self.numbers.text = str(num_list)[1:-1]
 
 
 class MainScreen(MDScreen):
@@ -215,13 +269,22 @@ class RandomizerApp(MDApp):
 		self.theme_cls.theme_style = "Dark"
 
 		self.manager = MDScreenManager()
+		self.toolbar = MDTopAppBar(title="Randomizer", elevation=10, pos_hint={"top": 1},
+		                           left_action_items=[["arrow-left", lambda x: self.go_back()]],
+		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
+		self.menu = MDDropdownMenu(width_mult=4, caller=self.toolbar)
 
 	def build(self):
 		self.manager.add_widget(MainScreen(name="main"))
 		self.manager.add_widget(Randomizer(name="randomizer"))
 		self.manager.add_widget(ListScreen(name="list"))
+		self.manager.add_widget(RandomNumber(name="random_number"))
 
-		return self.manager
+		self.root = MDBoxLayout(orientation="vertical")
+		self.root.add_widget(self.toolbar)
+		self.root.add_widget(self.manager)
+
+		return self.root
 
 	def go_back(self):
 		self.manager.transition.direction = "right"
@@ -230,6 +293,9 @@ class RandomizerApp(MDApp):
 	def go_forward_to(self, screen):
 		self.manager.transition.direction = "left"
 		self.manager.current = screen
+
+	def open_menu(self):
+		self.menu.open()
 
 
 if __name__ == '__main__':

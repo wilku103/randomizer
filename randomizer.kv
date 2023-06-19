@@ -10,17 +10,18 @@
 		MDFlatButton:
 			text: "Randomize"
 			on_press: app.go_forward_to("randomizer")
+		MDFlatButton:
+			text: "Random number"
+			on_press: app.go_forward_to("random_number")
 
 <Randomizer>
 	lists_grid: lists_grid
 
 	name: "randomizer"
 
+
 	MDBoxLayout:
 		orientation: "vertical"
-
-		Toolbar:
-			title: "Randomizer"
 
 		MDScrollView:
 			do_scroll_x: False
@@ -38,16 +39,11 @@
 
 <ListScreen>
 	positions: positions
-	toolbar: toolbar
 
 	name: "list"
 
 	MDBoxLayout:
 		orientation: "vertical"
-
-		Toolbar:
-			id: toolbar
-			title: "List"
 
 		MDScrollView:
 			do_scroll_x: False
@@ -62,3 +58,49 @@
 				size_hint_y: None
 				height: 100
 				padding: 5, 5
+
+<RandomNumber>
+	name: "random_number"
+	numbers: numbers
+	MDBoxLayout:
+		orientation: "vertical"
+
+		MDLabel:
+			id: numbers
+			font_style: "H2"
+			halign: "center"
+			valign: "center"
+			text: "0"
+
+		MDBoxLayout:
+			orientation: "horizontal"
+
+			MDTextField:
+				id: min_number
+				hint_text: "Min"
+				input_filter: "int"
+				size_hint_x: None
+				width: 100
+				border_margin: 10
+			MDTextField:
+				id: max_number
+				hint_text: "Max"
+				input_filter: "int"
+				size_hint_x: None
+				width: 100
+			MDTextField:
+				id: count
+				hint_text: "Count"
+				input_filter: "int"
+				size_hint_x: None
+				width: 100
+				text: "1"
+			MDCheckbox:
+				id: unique
+				size_hint_x: None
+				width: 100
+				active: False
+
+			MDFlatButton:
+				text: "Randomize"
+				on_press: root.get_numbers(int(min_number.text), int(max_number.text), int(count.text), unique.active)
