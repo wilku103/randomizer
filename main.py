@@ -143,6 +143,7 @@ class SavedList:
 class ListScreen(MDScreen):
 	positions: MDGridLayout = ObjectProperty(None)
 	_list: SavedList = ObjectProperty(SavedList("default"))
+	skip_leave = BooleanProperty(False)
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -153,6 +154,15 @@ class ListScreen(MDScreen):
 
 	def get_list(self):
 		return self._list
+
+	def clear_list(self):
+		self._list.clear_positions()
+		self.update()
+
+	def delete_list(self):
+		self.skip_leave = True
+		MDApp.get_running_app().manager.get_screen(
+				"randomizer").delete_list(self._list)
 
 	def update(self):
 		self.positions.clear_widgets()
@@ -165,17 +175,21 @@ class ListScreen(MDScreen):
 		MDApp.get_running_app().menu = MDDropdownMenu(items=[
 			{
 				"text":       "Clear",
-				"on_release": self._list.clear_positions
+				"viewclass":  "OneLineListItem",
+				"on_release": lambda _=None: self.clear_list()
 				},
 			{
 				"text":       "Delete",
-				"on_release": lambda _: MDApp.get_running_app().manager.get_screen("randomizer").delete_list(self._list)
+				"viewclass":  "OneLineListItem",
+				"on_release": lambda _=None: self.delete_list()
 				}
 			], width_mult=4, caller=MDApp.get_running_app().toolbar)
 
 	def on_leave(self, *args):
+		if self.skip_leave:
+			self.skip_leave = False
+			return True
 		self._list.save()
-		self.positions.clear_widgets()
 
 
 class Randomizer(MDScreen):
@@ -188,8 +202,8 @@ class Randomizer(MDScreen):
 		super().__init__(**kwargs)
 
 	def update(self):
-		self.identify_lists()
 		self.lists_grid.clear_widgets()
+		self.identify_lists()
 		for name in self.lists:
 			list_button = MDFlatButton(text=name, on_press=self.open_list_screen)
 			self.lists_grid.add_widget(list_button)
@@ -229,7 +243,6 @@ class Randomizer(MDScreen):
 			self.saved_lists.delete(_list.get_name())
 		if _list.get_name() in self.lists:
 			self.lists.remove(_list.get_name())
-		self.lists_grid.clear_widgets()
 		self.update()
 
 
