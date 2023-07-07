@@ -1,7 +1,3 @@
-<Position>
-	size_hint_y: None
-	height: 50
-
 <MainScreen>
 	name: "main"
 
@@ -42,9 +38,6 @@
 
 	name: "list"
 
-#	MDBoxLayout:
-#		orientation: "vertical"
-
 	MDScrollView:
 		do_scroll_x: False
 		do_scroll_y: True
@@ -54,11 +47,10 @@
 		MDGridLayout:
 			id: positions
 			adaptive_height: True
-			cols: 1
 			size_hint_y: None
+			cols: 1
 			height: 100
 			padding: 5, 5
-#			md_bg_color: 1, 0, 0, 1
 
 <RandomNumber>
 	name: "random_number"

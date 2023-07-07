@@ -19,28 +19,16 @@ from kivymd.uix.toolbar import MDTopAppBar
 kivy.require("2.1.0")
 
 
-# class Toolbared(MDWidget):
-# 	def __init__(self, **kwargs):
-# 		super().__init__(**kwargs)
-# 		self.toolbar = MDTopAppBar(left_action_items=[["arrow-left", lambda x: MDApp.get_running_app().go_back()]],
-# 		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
-# 		self.toolbar_menu = None
-# 		self.add_widget(self.toolbar)
-#
-# 	def open_menu(self):
-# 		self.toolbar_menu.open()
-
-
 class Position(MDLabel):
 	edit = BooleanProperty(False)
 	picked = BooleanProperty(False)
 
 	textinput = ObjectProperty(None, allownone=True)
 
-	def __init__(self, text: str, picked: bool = False, **kwargs):
+	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self.text = text
-		self.picked = picked
+		self.size_hint_y = None
+		self.height = 50
 
 	def on_touch_down(self, touch):
 		if self.collide_point(*touch.pos) and not self.edit:
@@ -218,7 +206,7 @@ class ListScreen(MDScreen):
 			print(f"{position.text=} {position.picked=} {position.size=}")
 			self.positions.add_widget(position)
 
-	# self.positions.add_widget(NewPosition())
+		self.positions.add_widget(NewPosition())
 
 	def on_enter(self, *args):
 
@@ -241,13 +229,8 @@ class ListScreen(MDScreen):
 				},
 			], width_mult=4, caller=MDApp.get_running_app().toolbar)
 
-
-# def on_leave(self, *args):
-# 	if self.skip_leave:
-# 		self.skip_leave = False
-# 		return True
-# 	self._list.save()
-
+	def on_leave(self, *args):
+		MDApp.get_running_app().menu = MDDropdownMenu()
 
 class Randomizer(MDScreen):
 	saved_lists = JsonStore("saved_lists.json")
@@ -365,7 +348,7 @@ class RandomizerApp(MDApp):
 		self.toolbar = MDTopAppBar(title="Randomizer", elevation=10, pos_hint={"top": 1},
 		                           left_action_items=[["arrow-left", lambda x: self.go_back()]],
 		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
-		self.menu = MDDropdownMenu(width_mult=4, caller=self.toolbar)
+		self.menu = MDDropdownMenu()
 
 		self.lists = ListManager()
 
