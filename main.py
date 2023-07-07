@@ -29,6 +29,7 @@ class Position(MDLabel):
 		super().__init__(**kwargs)
 		self.size_hint_y = None
 		self.height = 50
+		self.halign = "center"
 
 	def on_touch_down(self, touch):
 		if self.collide_point(*touch.pos) and not self.edit:
@@ -43,7 +44,7 @@ class Position(MDLabel):
 		self.textinput = MDTextField(
 				text=self.text, size_hint=(1, 1),
 				font_size=self.font_size, font_name=self.font_name,
-				pos=self.pos, size=self.size, multiline=False)
+				pos=self.pos, size=self.size, halign=self.halign, multiline=False)
 		self.add_widget(self.textinput)
 		self.text = ""
 		self.textinput.bind(focus=self.on_text_focus)
@@ -51,8 +52,9 @@ class Position(MDLabel):
 	def on_text_focus(self, instance, focus):
 		if focus is False:
 			if instance.text == "":
-				self.parent.parent.parent.parent.get_list().remove_position(self)
-				self.parent.parent.parent.parent.update()
+				screen: ListScreen = MDApp.get_running_app().manager.get_screen("list")
+				screen.get_list().remove_position(self)
+				screen.update()
 				return
 
 			self.text = instance.text
@@ -67,9 +69,10 @@ class NewPosition(Position):
 
 	def on_text_focus(self, instance, focus):
 		if focus is False and instance.text != "":
-			self.parent.parent.parent.get_list(
+			screen: ListScreen = MDApp.get_running_app().manager.get_screen("list")
+			screen.get_list(
 					).add_position(Position(text=instance.text))
-			self.parent.parent.parent.update()
+			screen.update()
 			self.text = ""
 			self.edit = False
 
@@ -149,32 +152,31 @@ class ListManager:
 			self.lists.append(SavedList(key, store.get(key)["positions"]))
 
 	def rename_list(self, _list: SavedList):
-		pass
+		def change_callback(_popup: MDDialog):
+			_list.set_name(_popup.content_cls.text)
+			self.save()
+			_popup.dismiss()
+			MDApp.get_running_app().toolbar.title = _list.get_name()
 
-
-# def change_callback(textfield):
-# 	_list.set_name(textfield.text)
-# 	self.save()
-#
-# popup = MDDialog(
-# 		title="Rename list",
-# 		type="custom",
-# 		content_cls=MDTextField(
-# 				hint_text="new name",
-# 				text=_list.get_name(),
-# 				),
-# 		buttons=[
-# 			MDFlatButton(
-# 					text="CANCEL",
-# 					on_release=lambda x: popup.dismiss()
-# 					),
-# 			MDFlatButton(
-# 					text="OK",
-# 					on_release=lambda x: change_callback(popup.content_cls)
-# 					)
-# 			]
-# 		)
-# popup.open()
+		popup = MDDialog(
+				title="Rename list",
+				type="custom",
+				content_cls=MDTextField(
+						hint_text="new name",
+						text=_list.get_name(),
+						),
+				buttons=[
+					MDFlatButton(
+							text="cancel",
+							on_release=lambda x: popup.dismiss()
+							),
+					MDFlatButton(
+							text="ok",
+							on_release=lambda x: change_callback(popup)
+							)
+					]
+				)
+		popup.open()
 
 
 class ListScreen(MDScreen):
@@ -203,9 +205,7 @@ class ListScreen(MDScreen):
 	def update(self):
 		self.positions.clear_widgets()
 		for position in self._list.get_positions():
-			print(f"{position.text=} {position.picked=} {position.size=}")
 			self.positions.add_widget(position)
-
 		self.positions.add_widget(NewPosition())
 
 	def on_enter(self, *args):
@@ -231,6 +231,7 @@ class ListScreen(MDScreen):
 
 	def on_leave(self, *args):
 		MDApp.get_running_app().menu = MDDropdownMenu()
+
 
 class Randomizer(MDScreen):
 	saved_lists = JsonStore("saved_lists.json")
@@ -263,17 +264,17 @@ class Randomizer(MDScreen):
 
 	@staticmethod
 	def new_list(_):
-		def create_callback(popup: MDDialog):
-			if MDApp.get_running_app().lists.get_list(popup.content_cls.text) is not None:
-				popup.dismiss()
-				popup = MDDialog(title="list already exists")
-				popup.open()
+		def create_callback(_popup: MDDialog):
+			if MDApp.get_running_app().lists.get_list(_popup.content_cls.text) is not None:
+				_popup.dismiss()
+				_popup = MDDialog(title="list already exists")
+				_popup.open()
 				return
-			_list = SavedList(popup.content_cls.text)
+			_list = SavedList(_popup.content_cls.text)
 			MDApp.get_running_app().lists.add_list(_list)
 			MDApp.get_running_app().manager.get_screen("list").set_list(_list)
 			MDApp.get_running_app().go_forward_to("list")
-			popup.dismiss()
+			_popup.dismiss()
 
 		popup = MDDialog(
 				title="New list",
