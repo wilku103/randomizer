@@ -1,4 +1,4 @@
-from random import choice, randint, sample
+from random import randint, sample
 from typing import Dict
 
 import kivy
@@ -61,20 +61,23 @@ class Position(MDLabel):
 			self.edit = False
 
 
-class NewPosition(Position):
+class NewPosition(MDTextField):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self.edit = True
-		self.textinput.hint_text = "new position"
+		self.text = ""
+		self.hint_text = "new position"
+		self.multiline = False
+		self.size_hint_y = None
+		self.height = 50
+		self.halign = "center"
 
-	def on_text_focus(self, instance, focus):
+	def on_focus(self, instance, focus):
 		if focus is False and instance.text != "":
 			screen: ListScreen = MDApp.get_running_app().manager.get_screen("list")
 			screen.get_list(
 					).add_position(Position(text=instance.text))
 			screen.update()
 			self.text = ""
-			self.edit = False
 
 
 class SavedList:
@@ -97,13 +100,25 @@ class SavedList:
 	def get_positions(self):
 		return self.positions
 
-	def get_random_position(self):
-		positions = [position for position in self.positions if not position.picked]
-		if len(positions) == 0:
-			return None
-		position = choice(positions)
-		position.picked = True
-		return position
+	def get_random_position(self, count=1, unique=False):
+		picked = []
+		if unique:
+			positions = [position for position in self.positions if not position.picked]
+			if len(positions) == 0:
+				return None
+			elif len(positions) < count:
+				count = len(positions)
+			picked = sample(positions, count)
+			for position in picked:
+				position.picked = True
+		else:
+			picked = sample(self.positions, count)
+
+		text = "\n".join([position.text for position in picked])
+		popup = MDDialog(
+				title="Random Position", text=text,
+				buttons=[MDFlatButton(text="OK", on_release=lambda _: popup.dismiss())])
+		popup.open()
 
 	def get_name(self):
 		return self.name
@@ -143,7 +158,7 @@ class ListManager:
 		for _list in self.lists:
 			store.clear()
 			store.put(_list.get_name(), positions=[{"text": position.text, "picked": position.picked} for position in
-			                                       _list.get_positions()])
+			                                       _list.get_positions() if position.text != ""])
 
 	def load(self):
 		self.lists.clear()
@@ -231,6 +246,7 @@ class ListScreen(MDScreen):
 
 	def on_leave(self, *args):
 		MDApp.get_running_app().menu = MDDropdownMenu()
+		MDApp.get_running_app().lists.save()
 
 
 class Randomizer(MDScreen):
@@ -250,13 +266,6 @@ class Randomizer(MDScreen):
 		MDApp.get_running_app().toolbar.title = "lists"
 
 		self.update()
-
-		# if len(self.corrupted_lists) > 0:
-		# 	text = ""
-		# 	for name in self.corrupted_lists:
-		# 		text += f"{name}\n"
-		# 	popup = MDDialog(title="the following lists are corrupted:", text=text)
-		# 	popup.open()
 		self.lists_grid.add_widget(MDFlatButton(text="new list", on_press=self.new_list))
 
 	def on_leave(self, *args):
@@ -351,7 +360,7 @@ class RandomizerApp(MDApp):
 		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
 		self.menu = MDDropdownMenu()
 
-		self.lists = ListManager()
+		self.lists: ListManager = ListManager()
 
 	def build(self):
 		self.manager.add_widget(MainScreen(name="main"))

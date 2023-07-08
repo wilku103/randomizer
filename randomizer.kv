@@ -38,19 +38,52 @@
 
 	name: "list"
 
-	MDScrollView:
-		do_scroll_x: False
-		do_scroll_y: True
-		size_hint: (1, 1)
-		pos_hint: {"top": 1}
+	MDBoxLayout:
+		orientation: "vertical"
 
-		MDGridLayout:
-			id: positions
-			adaptive_height: True
+		MDScrollView:
+			do_scroll_x: False
+			do_scroll_y: True
+			size_hint: (1, 1)
+			pos_hint: {"top": 1}
+
+			MDGridLayout:
+				id: positions
+				adaptive_height: True
+				size_hint_y: None
+				cols: 1
+				height: 100
+				padding: 5, 5
+		MDBoxLayout:
 			size_hint_y: None
-			cols: 1
-			height: 100
-			padding: 5, 5
+			orientation: "vertical"
+			MDBoxLayout:
+				orientation: "horizontal"
+				MDTextField:
+					id: count
+					hint_text: "Count"
+					input_filter: "int"
+					size_hint_x: None
+					width: 100
+					text: "1"
+				MDBoxLayout:
+					orientation: "vertical"
+					size_hint_x: None
+					MDLabel:
+						text: "Unique"
+						halign: "center"
+						valign: "center"
+					MDCheckbox:
+						id: unique
+						size_hint_x: None
+						width: 100
+						active: False
+
+				MDFlatButton:
+					text: "Randomize"
+					on_press: root._list.get_random_position(int(count.text), unique.active)
+
+
 
 <RandomNumber>
 	name: "random_number"
