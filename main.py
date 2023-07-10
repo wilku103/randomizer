@@ -26,6 +26,8 @@ class RandomizerApp(MDApp):
 		self.theme_cls.theme_style = "Dark"
 
 		self.manager: MDScreenManager = MDScreenManager()
+		self.screen_stack = ["main"]
+
 		self.toolbar = MDTopAppBar(title="Randomizer", elevation=10, pos_hint={"top": 1},
 		                           left_action_items=[["arrow-left", lambda x: self.go_back()]],
 		                           right_action_items=[["dots-vertical", lambda x: self.open_menu()]])
@@ -46,10 +48,13 @@ class RandomizerApp(MDApp):
 		return self.root
 
 	def go_back(self):
+		if len(self.screen_stack) == 1:
+			return
 		self.manager.transition.direction = "right"
-		self.manager.current = self.manager.previous()
+		self.manager.current = self.screen_stack.pop()
 
 	def go_forward_to(self, screen_name):
+		self.screen_stack.append(self.manager.current)
 		self.manager.transition.direction = "left"
 		self.manager.current = screen_name
 
