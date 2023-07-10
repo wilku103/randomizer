@@ -52,3 +52,8 @@ class SavedList:
 
 	def set_name(self, name: str):
 		self.name = name
+
+	def reset_picked(self, _, value):
+		if not value:
+			for position in self.positions:
+				position.picked = False
