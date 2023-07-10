@@ -7,9 +7,9 @@ from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.toolbar import MDTopAppBar
 
 from ListManager import ListManager
-from ListScreen import ListScreen
-from RandomNumber import RandomNumber
-from Randomizer import Randomizer
+from screens.ListScreen import ListScreen
+from screens.RandomNumber import RandomNumber
+from screens.Randomizer import Randomizer
 
 kivy.require("2.1.0")
 
