@@ -1,3 +1,4 @@
+from kivy.clock import Clock
 from kivymd.app import MDApp
 from kivymd.uix.textfield import MDTextField
 
@@ -13,6 +14,10 @@ class NewPosition(MDTextField):
 		self.size_hint_y = None
 		self.height = 50
 		self.halign = "center"
+		Clock.schedule_once(self.focus_text_input, 0.1)
+		
+	def focus_text_input(self, _):
+		self.focus = True
 
 	def on_focus(self, instance, focus):
 		if focus is False and instance.text != "":
