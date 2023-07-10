@@ -46,10 +46,12 @@ class RandomizerApp(MDApp):
 		return self.root
 
 	def go_back(self):
-		self.manager.switch_to(self.manager.previous(), direction="right")
+		self.manager.transition.direction = "right"
+		self.manager.current = self.manager.previous()
 
 	def go_forward_to(self, screen_name):
-		self.manager.switch_to(self.manager.get_screen(screen_name), direction="left")
+		self.manager.transition.direction = "left"
+		self.manager.current = screen_name
 
 	def open_menu(self):
 		self.menu.open()
