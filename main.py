@@ -10,6 +10,7 @@ from ListManager import ListManager
 from screens.ListScreen import ListScreen
 from screens.RandomNumber import RandomNumber
 from screens.Randomizer import Randomizer
+from screens.Wheel import Wheel
 
 kivy.require("2.1.0")
 
@@ -40,6 +41,7 @@ class RandomizerApp(MDApp):
 		self.manager.add_widget(Randomizer(name="randomizer"))
 		self.manager.add_widget(ListScreen(name="list"))
 		self.manager.add_widget(RandomNumber(name="random_number"))
+		self.manager.add_widget(Wheel(name="wheel"))
 
 		self.root = MDBoxLayout(orientation="vertical")
 		self.root.add_widget(self.toolbar)

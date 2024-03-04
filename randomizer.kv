@@ -9,6 +9,9 @@
 		MDFlatButton:
 			text: "Random number"
 			on_press: app.go_forward_to("random_number")
+		MDFlatButton:
+			text: "Wheel of fortune"
+			on_press: app.go_forward_to("wheel")
 
 <Randomizer>
 	lists_grid: lists_grid
@@ -57,16 +60,19 @@
 		MDBoxLayout:
 			size_hint_y: None
 			orientation: "vertical"
-			MDBoxLayout:
-				orientation: "horizontal"
+			size_hint_x: 1
+			MDFloatLayout:
+				size_hint_x: 1
 				MDTextField:
 					id: count
+					pos_hint: {"center_y": .4, "x": 0.05}
 					hint_text: "Count"
 					input_filter: "int"
 					size_hint_x: None
 					width: 100
 					text: "1"
 				MDBoxLayout:
+					pos_hint: {"center_y": .55, "x": 0.2}
 					orientation: "vertical"
 					size_hint_x: None
 					MDLabel:
@@ -78,10 +84,10 @@
 						size_hint_x: None
 						width: 100
 						active: False
-						on_active: root._list.reset_picked(*args);
-
-				MDFlatButton:
-					text: "Randomize"
+						on_active: root._list.reset_picked(*args)
+				MDIconButton:
+					pos_hint: {"center_y": .4, "x": 0.9}
+					icon: "autorenew"
 					on_press: root._list.get_random_position(int(count.text), unique.active)
 
 
@@ -131,3 +137,6 @@
 			MDFlatButton:
 				text: "Randomize"
 				on_press: root.get_numbers(int(min_number.text), int(max_number.text), int(count.text), unique.active)
+
+<Wheel>
+	name: "wheel"
